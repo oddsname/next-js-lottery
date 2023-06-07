@@ -16,11 +16,27 @@ export default function LotteryEntrance() {
         entranceFee,
         numberOfPlayers,
         recentWinner,
+        contract
     } = useLottery();
 
     useEffect(() => {
         if (isWeb3Enabled) {
-           resetContractData();
+            resetContractData();
+
+            contract.on('WinnerPicked', async () => {
+                console.log('WinnerPicked!!!!');
+                await resetContractData();
+            })
+
+            contract.on('LotteryEnter', async () => {
+                console.log('LotteryEnter!!!');
+                await resetContractData();
+            })
+
+            return () => {
+                contract.removeAllListeners('WinnerPicked')
+                contract.removeAllListeners('LotteryEnter');
+            }
         }
     }, [isWeb3Enabled])
 
@@ -43,7 +59,7 @@ export default function LotteryEntrance() {
 
     const handleSuccess = async (tx) => {
         await tx.wait(1);
-        await resetContractData();
+
         successNotification();
     }
 
@@ -63,7 +79,7 @@ export default function LotteryEntrance() {
                 <div>
                     <p>Lottery Entrance Fee: {formatEntranceFee()}</p>
                     <p>Number of Players: {numberOfPlayers}</p>
-                    { recentWinner ? "Recent Winner: " + recentWinner : ''}
+                    {recentWinner ? "Recent Winner: " + recentWinner : ''}
                 </div>
             </div>
         )
