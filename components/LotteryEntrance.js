@@ -5,7 +5,7 @@ import {useNotification} from "web3uikit";
 import {useLottery} from "@/hooks/useLottery";
 
 export default function LotteryEntrance() {
-    const {isWeb3Enabled, web3} = useMoralis();
+    const {isWeb3Enabled} = useMoralis();
     const dispatch = useNotification();
     const {
         resetEntranceFee,
@@ -16,12 +16,16 @@ export default function LotteryEntrance() {
         entranceFee,
         numberOfPlayers,
         recentWinner,
-        contract
+        getContract
     } = useLottery();
+
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isWeb3Enabled) {
             resetContractData();
+
+            const contract = getContract();
 
             contract.on('WinnerPicked', async () => {
                 console.log('WinnerPicked!!!!');
@@ -51,9 +55,13 @@ export default function LotteryEntrance() {
     }
 
     const onButtonClick = async () => {
+        setLoading(true);
         await joinLottery({
             onSuccess: handleSuccess,
-            onError: (err) => console.log(err)
+            onError: (err) => {
+                console.log(err)
+                setLoading(false);
+            }
         })
     }
 
@@ -61,6 +69,7 @@ export default function LotteryEntrance() {
         await tx.wait(1);
 
         successNotification();
+        setLoading(false);
     }
 
     const successNotification = () => {
@@ -74,8 +83,17 @@ export default function LotteryEntrance() {
 
     const renderContent = () => {
         return (
-            <div>
-                <button onClick={onButtonClick}>Enter Lottery</button>
+            <div className='p-5'>
+                <button
+                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                    onClick={onButtonClick}
+                    disabled={loading}
+                >
+                    { loading
+                        ? <div className='animate-spin spinner-border h-8 w-8 border-b-2 rounded-full'></div>
+                        : <div>Enter Lottery</div>
+                    }
+                </button>
                 <div>
                     <p>Lottery Entrance Fee: {formatEntranceFee()}</p>
                     <p>Number of Players: {numberOfPlayers}</p>

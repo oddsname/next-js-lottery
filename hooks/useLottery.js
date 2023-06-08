@@ -10,9 +10,6 @@ export function useLottery(enterFee='0') {
     const abi = contractAbis[chainId]
     const contractAddress = contractAddresses[chainId];
 
-    const signer = web3.getSigner();
-    const contract = new ethers.Contract(contractAddress, abi, signer);
-
     const [entranceFee, setEntranceFee] = useState(enterFee);
     const [numberOfPlayers, setNumberOfPlayers] = useState("0");
     const [recentWinner, setRecentWinner] = useState("0");
@@ -75,6 +72,11 @@ export function useLottery(enterFee='0') {
         }
     }
 
+    const getContract = () => {
+        const signer = web3.getSigner();
+        return new ethers.Contract(contractAddress, abi, signer);
+    }
+
     return {
         chainId,
         abi,
@@ -86,6 +88,6 @@ export function useLottery(enterFee='0') {
         joinLottery,
         resetNumberOfPlayers,
         resetResentWinner,
-        contract
+        getContract
     }
 }
